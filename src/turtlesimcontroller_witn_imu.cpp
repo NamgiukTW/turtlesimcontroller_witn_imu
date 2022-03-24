@@ -9,9 +9,9 @@ float front=0, front2=0;
 // float side=0;
 float rotate=0, rotate2=0;
 
-unsigned long now = 0;
-unsigned long pass = 0;
-double ms=0;
+// unsigned long now = 0;
+// unsigned long pass = 0;
+// double ms=0;
 
 void msgCallback(const sensor_msgs::Imu& msg2)
 {
@@ -36,8 +36,15 @@ void msgCallback(const sensor_msgs::Imu& msg2)
     // rotate2 = msg2.angular_velocity.x;
 
     front = atan(-msg2.linear_acceleration.x / sqrt(pow(msg2.linear_acceleration.y, 2) + pow(msg2.linear_acceleration.z, 2)));
+    front = front * 1.5;
     rotate = atan(-msg2.linear_acceleration.y / sqrt(pow(msg2.linear_acceleration.x, 2) + pow(msg2.linear_acceleration.z, 2)));
     
+    if(front > 1.5 || front < -1.5)
+        front = 0;
+
+    if(rotate > 1.2 || rotate < -1.2)
+        rotate = 0;
+
     // side = msg2.orientation.y;
     
 }
@@ -58,10 +65,10 @@ int main(int argc, char **argv)
         geometry_msgs::Twist msg;
         
         msg.linear.x=front;
-        ROS_INFO("rotate=%f",front);
+        ROS_INFO("pitch=%f",front);
         
         msg.angular.z=rotate;
-        ROS_INFO("rotate=%f",rotate);
+        ROS_INFO("roll=%f",rotate);
         
         // msg.angular.z=rotate2;
         // ROS_INFO("rotate=%f",rotate2);
