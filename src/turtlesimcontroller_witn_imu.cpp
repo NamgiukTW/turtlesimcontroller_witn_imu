@@ -2,22 +2,44 @@
 #include "sensor_msgs/Imu.h"
 #include "geometry_msgs/Twist.h"
 
-float front=0;
-float side=0;
-// float rotate=0;
+#include <algorithm>
+#include <ctime>
 
-void msgCallback(const sensor_msgs::Imu& msg)
+float front=0, front2=0;
+// float side=0;
+float rotate=0, rotate2=0;
+
+unsigned long now = 0;
+unsigned long pass = 0;
+double ms=0;
+
+void msgCallback(const sensor_msgs::Imu& msg2)
 {
-    ROS_INFO("linear.x=%f",msg.orientation.x);
-    ROS_INFO("linear.y=%f",msg.orientation.y);
-    ROS_INFO("linear.z=%f",msg.orientation.z);
-    ROS_INFO("angular.x=%f",msg.angular_velocity.x);
-    ROS_INFO("angular.y=%f",msg.angular_velocity.y);
-    ROS_INFO("angular.z=%f",msg.angular_velocity.z);
+    // ROS_INFO("pitch.y=%f",front);
+    // ROS_INFO("roll.x=%f",rotate);
+    // ROS_INFO("roll.x=%f",rotate2);
+    // ROS_INFO("speed=%f",ms);
+    // ROS_INFO("hello?");
 
-    front = -msg.orientation.y;
-    side = msg.orientation.x;
-    // rotate = msg.angular_velocity.z;
+    // conversion
+
+    // quaternion to euler 
+
+    // front = pitch (radian) ==> m/s  (mapping: -1m/s ~ 1m/s 선형적으로 변환)
+    // rotate = roll (radian) ==> rad/s (mapping: -1 rad/s ~ 1rad/s 선형적으로 변환 )
+
+    // now = msg2.header.seq;
+    // pass = msg2.header.seq;
+    // ms = (now-pass) / 100;
+
+    // front2 = msg.angular_velocity.y * ms;
+    // rotate2 = msg2.angular_velocity.x;
+
+    front = atan(-msg2.linear_acceleration.x / sqrt(pow(msg2.linear_acceleration.y, 2) + pow(msg2.linear_acceleration.z, 2)));
+    rotate = atan(-msg2.linear_acceleration.y / sqrt(pow(msg2.linear_acceleration.x, 2) + pow(msg2.linear_acceleration.z, 2)));
+    
+    // side = msg2.orientation.y;
+    
 }
 
 int main(int argc, char **argv)
@@ -25,21 +47,24 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "turtlesimcontroller_witn_imu");
     ros::NodeHandle nh;
 
-    ros::Publisher imu_controller = nh.advertise<geometry_msgs::Twist>("turtle1/cmd_vel",100);
+    ros::Publisher imu_controller = nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel",100);
 
-    ros::Subscriber turtlesim_processer = nh.subscribe("imu/data", 100, msgCallback);
+    ros::Subscriber turtlesim_processer = nh.subscribe("/imu/data", 100, msgCallback);
     
     ros::Rate loop_rate(10);
-
+    
     while(ros::ok())
     {
         geometry_msgs::Twist msg;
+        
         msg.linear.x=front;
-        msg.linear.y=side;
-        msg.linear.z=0.0;
-        msg.angular.x=0.0;
-        msg.angular.y=0.0;
-        msg.angular.z=0.0;
+        ROS_INFO("rotate=%f",front);
+        
+        msg.angular.z=rotate;
+        ROS_INFO("rotate=%f",rotate);
+        
+        // msg.angular.z=rotate2;
+        // ROS_INFO("rotate=%f",rotate2);
 
         imu_controller.publish(msg);
 
