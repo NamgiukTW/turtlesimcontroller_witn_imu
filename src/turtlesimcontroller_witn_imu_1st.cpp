@@ -15,12 +15,12 @@ float rotate=0, rotate2=0;
 
 void msgCallback(const sensor_msgs::Imu& msg2)
 {
-    // ROS_INFO("pitch.y=%f",front);
-    // ROS_INFO("roll.x=%f",rotate);
+    ROS_INFO("pitch.y=%f",front);
+    ROS_INFO("roll.x=%f",rotate);
     // ROS_INFO("roll.x=%f",rotate2);
     // ROS_INFO("speed=%f",ms);
     // ROS_INFO("hello?");
-
+    // sleep(1);
     // conversion
 
     // quaternion to euler 
@@ -45,13 +45,15 @@ void msgCallback(const sensor_msgs::Imu& msg2)
     if(rotate > 1.2 || rotate < -1.2)
         rotate = 0;
 
+    
+    
     // side = msg2.orientation.y;
     
 }
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "turtlesimcontroller_witn_imu");
+    ros::init(argc, argv, "turtlesimcontroller_witn_imu_1st");
     ros::NodeHandle nh;
 
     ros::Publisher imu_controller = nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel",100);
@@ -65,10 +67,10 @@ int main(int argc, char **argv)
         geometry_msgs::Twist msg;
         
         msg.linear.x=front;
-        ROS_INFO("pitch=%f",front);
+        // ROS_INFO("pitch=%f",front);
         
         msg.angular.z=rotate;
-        ROS_INFO("roll=%f",rotate);
+        // ROS_INFO("roll=%f",rotate);
         
         // msg.angular.z=rotate2;
         // ROS_INFO("rotate=%f",rotate2);

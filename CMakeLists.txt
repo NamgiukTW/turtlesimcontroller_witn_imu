@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(turtlesimcontroller_witn_imu)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11 -pthread)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   geometry_msgs
   message_generation
+  turtlesim
 )
 
 ## System dependencies are found with CMake's conventions
@@ -75,6 +76,7 @@ generate_messages(
   std_msgs
   sensor_msgs
   geometry_msgs
+  turtlesim
 )
 
 ################################################
@@ -109,7 +111,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
    LIBRARIES turtlesimcontroller_witn_imu
-   CATKIN_DEPENDS roscpp std_msgs geometry_msgs sensor_msgs
+   CATKIN_DEPENDS roscpp std_msgs geometry_msgs sensor_msgs turtlesim
 #  DEPENDS system_lib
 )
 
@@ -137,7 +139,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(turtlesimcontroller_witn_imu src/turtlesimcontroller_witn_imu.cpp)
+add_executable(turtlesimcontroller_witn_imu_1st src/turtlesimcontroller_witn_imu_1st.cpp)
+add_executable(turtlesimcontroller_witn_imu_2nd src/turtlesimcontroller_witn_imu_2nd.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -147,10 +150,14 @@ add_executable(turtlesimcontroller_witn_imu src/turtlesimcontroller_witn_imu.cpp
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(turtlesimcontroller_witn_imu ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(turtlesimcontroller_witn_imu_1st ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(turtlesimcontroller_witn_imu_2nd ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(turtlesimcontroller_witn_imu
+target_link_libraries(turtlesimcontroller_witn_imu_1st
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(turtlesimcontroller_witn_imu_2nd
   ${catkin_LIBRARIES}
 )
 
