@@ -35,7 +35,7 @@ void imuDataCallback(const sensor_msgs::Imu& imuMsg)
     float rotateLocal1;
     geometry_msgs::Twist msg;
 
-    // 39~42 라인 계산 값을 공유하지 않기에 불필요
+    // 39~42 라인 값을 공유하지 않기에 불필요
 
     // now = imuMsg.header.seq;
     // pass = imuMsg.header.seq;
@@ -114,21 +114,33 @@ void poseDataCallback(const turtlesim::PoseConstPtr& turtlePoseMsg)
     // ROS_INFO("Y_Posetion = %f ", gY);
     // ROS_INFO("theta_Position = %f ", gTheta);
     // ROS_INFO("imu data subscribed?");
+    // std::cout << "X_posithon = " << gX << std::endl;
+    // std::cout << "Y_posithon = " << gY << std::endl;
+    // std::cout << "theta_Position = " << gTheta << std::endl;
+    // std::cout << "linear_Velocity = " << frontLocal2 << std::endl;
+    // std::cout << "angular_Velocity = " << rotateLocal2 << std::endl;
+    
+    // gMut.lock();
+    // gFront = frontLocal2;
+    // gRotate = rotateLocal2;
+    // gMut.unlock();
+    
+    // 139~142 라인 공유하는 스레드 없으므로 mutex 필요 없음
+
+}
+
+void timeCallBack(const ros::TimerEvent&){
     std::cout << "X_posithon = " << gX << std::endl;
     std::cout << "Y_posithon = " << gY << std::endl;
     std::cout << "theta_Position = " << gTheta << std::endl;
-    std::cout << "linear_Velocity = " << frontLocal2 << std::endl;
-    std::cout << "angular_Velocity = " << rotateLocal2 << std::endl;
-    sleep(1);
-
-    // 139~142 라인 공유하는 스레드 없으므로 mutex 필요 없음
-
+    std::cout << "linear_Velocity = " << gFront << std::endl;
+    std::cout << "angular_Velocity = " << gRotate << std::endl;
 }
 
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "turtlesimcontroller_witn_imu_2nd");
+    ros::init(argc, argv, "turtlesimcontroller_witn_imu_3rd");
 
     ros::NodeHandle nh;
     ros::Publisher imuData = nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel",100);
@@ -141,6 +153,7 @@ int main(int argc, char **argv)
 
     ros::Subscriber turtlesimControl = nh.subscribe("/imu/data", 100, imuDataCallback);
     ros::Subscriber turtlesimPoseSub = nh.subscribe("/turtle1/pose", 100, poseDataCallback);
+    ros::Timer timer = nh.createTimer(ros::Duration(1.0), timeCallBack);
    
     // ros::AsyncSpinner spinner(2);
     spinner.start();

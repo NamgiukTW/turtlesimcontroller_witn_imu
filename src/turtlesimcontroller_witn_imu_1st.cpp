@@ -1,13 +1,13 @@
-#include "ros/ros.h"
-#include "sensor_msgs/Imu.h"
-#include "geometry_msgs/Twist.h"
+#include "ros/ros.h" // ROS 기본 헤더
+#include "sensor_msgs/Imu.h" // 퍼블리시할 메시지 헤더
+#include "geometry_msgs/Twist.h" //서브스크라이버할 메시지 헤더
 
 #include <algorithm>
 #include <ctime>
 
-float front=0, front2=0;
+float front=0;
 // float side=0;
-float rotate=0, rotate2=0;
+float rotate=0;
 
 // unsigned long now = 0;
 // unsigned long pass = 0;
@@ -36,8 +36,9 @@ void msgCallback(const sensor_msgs::Imu& msg2)
     // rotate2 = msg2.angular_velocity.x;
 
     front = atan(-msg2.linear_acceleration.x / sqrt(pow(msg2.linear_acceleration.y, 2) + pow(msg2.linear_acceleration.z, 2)));
-    front = front * 1.5;
+    front = front * 1.5; // 거북이 속도를 pitch 기울기로 나타내는 값 보다 1.5배 빠르게
     rotate = atan(-msg2.linear_acceleration.y / sqrt(pow(msg2.linear_acceleration.x, 2) + pow(msg2.linear_acceleration.z, 2)));
+
     
     if(front > 1.5 || front < -1.5)
         front = 0;
