@@ -4,18 +4,11 @@
 #include "turtlesim/Pose.h"
 
 #include <mutex>
-#include <thread>
-#include <iostream>
-
-#include <algorithm>
-#include <ctime>
-
 
 //test
 #include <ros/callback_queue.h>
 float gFront=0;
 float gRotate=0;
-// float side=0;
 
 // unsigned long now = 0;
 // unsigned long pass = 0;
@@ -35,23 +28,15 @@ void imuDataCallback(const sensor_msgs::Imu& imuMsg)
     float rotateLocal1;
     geometry_msgs::Twist msg;
 
-    // 39~42 라인 값을 공유하지 않기에 불필요
-
     // now = imuMsg.header.seq;
     // pass = imuMsg.header.seq;
     // ms = (now-pass) / 100;
-
-    // Front2 = msg.angular_velocity.y * ms;
-    // Rotate2 = imuMsg.angular_velocity.x;
-
-    // std::lock_guard<std::mutex> lock(gMut);
-
 
     frontLocal1 = atan(-imuMsg.linear_acceleration.x / sqrt(pow(imuMsg.linear_acceleration.y, 2) + pow(imuMsg.linear_acceleration.z, 2)));
     frontLocal1 = frontLocal1 * 1.5;
     rotateLocal1 = atan(-imuMsg.linear_acceleration.y / sqrt(pow(imuMsg.linear_acceleration.x, 2) + pow(imuMsg.linear_acceleration.z, 2)));
     
-    if(frontLocal1 > 1.5 || frontLocal1 < -1.5) // 잘못된 변수 사용
+    if(frontLocal1 > 1.5 || frontLocal1 < -1.5)
         frontLocal1 = 0;
 
     if(rotateLocal1 > 1.2 || rotateLocal1 < -1.2)
@@ -81,60 +66,65 @@ void imuDataCallback(const sensor_msgs::Imu& imuMsg)
 
 void poseDataCallback(const turtlesim::PoseConstPtr& turtlePoseMsg)
 {
-    // std::lock_guard<std::mutex> lock(gMut);
-
-    // float xLocal;
-    // float yLocal;
-    // float thetaLocal;
-
-    // gMut.lock();
-    // xLocal = gX;
-    // yLocal = gY;
-    // thetaLocal = gTheta;
-    // gMut.unlock();
-
+    float x1;
+    float y1;
+    float theta1;
     float frontLocal2;
     float rotateLocal2;
+    // gX, gY, gTheta 전역 변수와 timeCallBack이 공유하므로 mutex 적용하기 위해 지역 변수 선언
+    // gFront, gRotate 전역변수와 imuDataCallback, timeCallBack이 공유하므로 마찬가지로 지역변수 선언
 
 
     gMut.lock();
+    x1 = gX;
+    y1 = gY;
+    theta1 = gTheta;
     frontLocal2 = gFront;
     rotateLocal2 = gRotate;
     gMut.unlock();
 
-    // 100~103 라인 imuDataCallback 스레드와 변수 데이터를 공유해야 하므로 mutex 필요
-
-    gX = turtlePoseMsg->x;
-    gY = turtlePoseMsg->y;
-    gTheta = turtlePoseMsg->theta;
+    x1 = turtlePoseMsg->x;
+    y1 = turtlePoseMsg->y;
+    theta1 = turtlePoseMsg->theta;
     frontLocal2 = turtlePoseMsg->linear_velocity;
     rotateLocal2 = turtlePoseMsg->angular_velocity;
 
-    // ROS_INFO("X_posithon = %f ", gX);
-    // ROS_INFO("Y_Posetion = %f ", gY);
-    // ROS_INFO("theta_Position = %f ", gTheta);
-    // ROS_INFO("imu data subscribed?");
-    // std::cout << "X_posithon = " << gX << std::endl;
-    // std::cout << "Y_posithon = " << gY << std::endl;
-    // std::cout << "theta_Position = " << gTheta << std::endl;
-    // std::cout << "linear_Velocity = " << frontLocal2 << std::endl;
-    // std::cout << "angular_Velocity = " << rotateLocal2 << std::endl;
-    
-    // gMut.lock();
-    // gFront = frontLocal2;
-    // gRotate = rotateLocal2;
-    // gMut.unlock();
-    
-    // 139~142 라인 공유하는 스레드 없으므로 mutex 필요 없음
+    gMut.lock();
+    gX = x1;
+    gY = y1;
+    gTheta = theta1;
+    gFront = frontLocal2;
+    gRotate = rotateLocal2;
+    gMut.unlock();
+   
+    // poseDataCallback에서 볼일이 끝났으므로 지역변수 -> 전역변수 돌릴 시 mutex 적용
 
 }
 
 void timeCallBack(const ros::TimerEvent&){
-    std::cout << "X_posithon = " << gX << std::endl;
-    std::cout << "Y_posithon = " << gY << std::endl;
-    std::cout << "theta_Position = " << gTheta << std::endl;
-    std::cout << "linear_Velocity = " << gFront << std::endl;
-    std::cout << "angular_Velocity = " << gRotate << std::endl;
+    
+    float x2;
+    float y2;
+    float theta2;
+    float frontLocal3;
+    float rotateLocal3;
+
+    gMut.lock();
+    x2 = gX;
+    y2 = gY;
+    theta2 = gTheta;
+    frontLocal3 = gFront;
+    rotateLocal3 = gRotate;
+    gMut.unlock();
+    // gX, gY, gTheta 전역 변수와 timeCallBack이 공유하므로 mutex 적용하기 위해 지역 변수 선언
+    // gFront, gRotate 전역변수와 imuDataCallback, timeCallBack이 공유하므로 마찬가지로 지역변수 선언
+    // poseDataCallback 콜백 함수에서 적용한 결과를 1초 단위로 출력하기 위해 timeCallBack 콜백함수 사용
+
+    std::cout << "X_posithon = " << x2 << std::endl;
+    std::cout << "Y_posithon = " << y2 << std::endl;
+    std::cout << "theta_Position = " << theta2 << std::endl;
+    std::cout << "linear_Velocity = " << frontLocal3 << std::endl;
+    std::cout << "angular_Velocity = " << rotateLocal3 << std::endl;
 }
 
 
