@@ -142,6 +142,7 @@ include_directories(
 add_executable(turtlesimcontroller_witn_imu_1st src/turtlesimcontroller_witn_imu_1st.cpp)
 add_executable(turtlesimcontroller_witn_imu_2nd src/turtlesimcontroller_witn_imu_2nd.cpp)
 add_executable(turtlesimcontroller_witn_imu_3rd src/turtlesimcontroller_witn_imu_3rd.cpp)
+add_executable(turtlesimcontroller_witn_imu_4th src/turtlesimcontroller_witn_imu_4th.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,6 +155,7 @@ add_executable(turtlesimcontroller_witn_imu_3rd src/turtlesimcontroller_witn_imu
 add_dependencies(turtlesimcontroller_witn_imu_1st ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(turtlesimcontroller_witn_imu_2nd ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(turtlesimcontroller_witn_imu_3rd ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(turtlesimcontroller_witn_imu_4th ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(turtlesimcontroller_witn_imu_1st
@@ -163,6 +165,9 @@ target_link_libraries(turtlesimcontroller_witn_imu_2nd
   ${catkin_LIBRARIES}
 )
 target_link_libraries(turtlesimcontroller_witn_imu_3rd
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(turtlesimcontroller_witn_imu_4th
   ${catkin_LIBRARIES}
 )
 

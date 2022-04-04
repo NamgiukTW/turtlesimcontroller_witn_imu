@@ -26,7 +26,6 @@ float gY = 0;
 float gTheta = 0;
 
 std::mutex gMut;
-
 ros::Publisher* pVeloCommandPublisher;
 
 void imuDataCallback(const sensor_msgs::Imu& imuMsg)
