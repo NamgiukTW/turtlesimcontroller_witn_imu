@@ -1,3 +1,6 @@
+// 2nd 에 사용한 sleep를 버리고 ROS time 기능을 이용해 출력 딜레이 적용
+// time을 사용하기 위한 callback함수를 새로 만든다.
+
 #include "ros/ros.h"
 #include "sensor_msgs/Imu.h"
 #include "geometry_msgs/Twist.h"
@@ -12,6 +15,7 @@ float gRotate = 0;
 float gX = 0;
 float gY = 0;
 float gTheta = 0;
+// 해당 전역변수는 각 스레드가 데이터 공유
 
 std::mutex gMut;
 
@@ -72,6 +76,8 @@ void poseDataCallback(const turtlesim::PoseConstPtr &turtlePoseMsg)
     }
 
     // poseDataCallback에서 볼일이 끝났으므로 지역변수 -> 전역변수 돌릴 시 mutex 적용
+
+    // 2nd 노드와 달리 해당 스레드에서 출력하지 않고 전역변수에 좌표값만 선언함.
 }
 
 void timeCallBack(const ros::TimerEvent &)
@@ -119,9 +125,8 @@ int main(int argc, char **argv)
 
     ros::Subscriber turtlesimControl = nh.subscribe("/imu/data", 100, imuDataCallback);
     ros::Subscriber turtlesimPoseSub = nh.subscribe("/turtle1/pose", 100, poseDataCallback);
-    ros::Timer timer = nh.createTimer(ros::Duration(1.0), timeCallBack);
+    ros::Timer timer = nh.createTimer(ros::Duration(1.0), timeCallBack); // time 콜백함수를 사용하기 위해 적용. 출력이 1초간 딜레이됨
 
-    // ros::AsyncSpinner spinner(2);
     spinner.start();
     ros::waitForShutdown();
 

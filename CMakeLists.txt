@@ -3,6 +3,7 @@ project(turtlesimcontroller_witn_imu)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11 -pthread)
+### 멀티 스레드를 구현하기 위해 -pthread 옵션 추가 (2nd)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -133,7 +134,8 @@ add_library(ngu_libarary
 target_link_libraries(ngu_libarary
   ${catkin_LIBRARIES}
 )
-
+### 4th 노드를 작동하기 위해 라이브러리 사용 옵션(add_library, target_link_library) 적용
+### 라이브러리는 다른곳에서 작성한 코드를 가리킴(건축에 필요한 자재 같다고 생각)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -147,8 +149,8 @@ add_executable(turtlesimcontroller_witn_imu_1st src/turtlesimcontroller_witn_imu
 add_executable(turtlesimcontroller_witn_imu_2nd src/turtlesimcontroller_witn_imu_2nd.cpp)
 add_executable(turtlesimcontroller_witn_imu_3rd src/turtlesimcontroller_witn_imu_3rd.cpp)
 add_executable(turtlesimcontroller_witn_imu_4th src/turtlesimcontroller_witn_imu_4th.cpp)
-#add_executable(Listener src/Listener.cpp)
-
+# add_executable(Listener src/Listener.cpp)
+### 라이브러리로 사용될 파일은 add_executable, add_dependencies, target_link_libraries를 사용하지 않는다.
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -177,6 +179,8 @@ target_link_libraries(turtlesimcontroller_witn_imu_3rd
 target_link_libraries(turtlesimcontroller_witn_imu_4th
   ${catkin_LIBRARIES} ngu_libarary
 )
+### 4th는 라이브러리를 사용하므로 사용할 라이브러리를 지정한다.
+
 #target_link_libraries(Listener
 #  ${catkin_LIBRARIES}
 #)

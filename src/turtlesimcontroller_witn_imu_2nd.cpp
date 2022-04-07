@@ -1,9 +1,13 @@
+// 1st 노드에 멀티스레드 옵션 적용
+// Imu 를 이용한 turtlesim 제어와 제어된 turtlesim의 위치값과 속도값 출력이 같이 되도록 진행
+// 각 스레드 끼리 공유하는 데이터는 mutex 적용
+
 #include "ros/ros.h"
 #include "sensor_msgs/Imu.h"
 #include "geometry_msgs/Twist.h"
-#include "turtlesim/Pose.h"
+#include "turtlesim/Pose.h" // turtle의 위치값 메시지 출력을 위해 헤더 선언
 
-#include <mutex>
+#include <mutex> //mutex 사용을 위해 선언
 // #include <thread>
 // #include <iostream>
 
@@ -11,17 +15,18 @@
 // #include <ctime>
 
 // test
-#include <ros/callback_queue.h>
+#include <ros/callback_queue.h> //callbackqueue 사용을 위해 헤더 선언
 float gFront = 0;
 float gRotate = 0;
-// float side=0;
+// 해당 전역변수는 각 스레드가 데이터 공유
+
 
 // unsigned long now = 0;
 // unsigned long pass = 0;
 // double ms=0;
 
-std::mutex gMut;
-ros::Publisher *pVeloCommandPublisher;
+std::mutex gMut; // mutex의 원활한 사용을 위한 변수 선언
+ros::Publisher *pVeloCommandPublisher; // 콜백 함수 스레드 안에서 퍼블리셔를 구동하게 하기 위해 선언
 
 void imuDataCallback(const sensor_msgs::Imu &imuMsg)
 {
@@ -56,7 +61,7 @@ void imuDataCallback(const sensor_msgs::Imu &imuMsg)
     msg.angular.z = rotateLocal1;
 
     // make message
-    pVeloCommandPublisher->publish(msg);
+    pVeloCommandPublisher->publish(msg); // 퍼블리셔 메시지 생성
 
     {
         std::lock_guard<std::mutex> lock(gMut);
@@ -70,18 +75,6 @@ void imuDataCallback(const sensor_msgs::Imu &imuMsg)
 
 void poseDataCallback(const turtlesim::PoseConstPtr &turtlePoseMsg)
 {
-    // std::lock_guard<std::mutex> lock(gMut);
-
-    // float xLocal;
-    // float yLocal;
-    // float thetaLocal;
-
-    // gMut.lock();
-    // xLocal = x1;
-    // yLocal = y1;
-    // thetaLocal = theta1;
-    // gMut.unlock();
-
     float frontLocal2;
     float rotateLocal2;
     float x1 = 0;
@@ -109,7 +102,7 @@ void poseDataCallback(const turtlesim::PoseConstPtr &turtlePoseMsg)
 
     std::cout << "Imu_Front = " << frontLocal2 << std::endl;
     std::cout << "Imu_Rotate = " << rotateLocal2 << std::endl;
-    sleep(1);
+    sleep(1); // 출력을 1초 딜레이
 
     // 139~142 라인 공유하는 스레드 없으므로 mutex 필요 없음
 }
@@ -123,6 +116,10 @@ int main(int argc, char **argv)
     pVeloCommandPublisher = &imuData;
     // ros::Rate loopRate(10);
 
+    // CallbackQueue 함수와 AsyncSpinner 함수는 같이 사용하면 좋다.
+    // AsyncSpinner 에 변수를 선언해 초기화하고 spinner.start();로 구동 시작
+
+
     ros::CallbackQueue myCallbackQueue;             // test
     ros::AsyncSpinner spinner(0, &myCallbackQueue); // test
     nh.setCallbackQueue(&myCallbackQueue);          // test
@@ -130,9 +127,12 @@ int main(int argc, char **argv)
     ros::Subscriber turtlesimControl = nh.subscribe("/imu/data", 100, imuDataCallback);
     ros::Subscriber turtlesimPoseSub = nh.subscribe("/turtle1/pose", 100, poseDataCallback);
 
-    // ros::AsyncSpinner spinner(2);
+    // 모든 콜백함수를 서브스크라이빙 하기 위해 각각 서브스크라이버 설정
+
     spinner.start();
     ros::waitForShutdown();
+
+    // ros::waitForShutdown();으로 직접 종료 전 까지 프로그램을 끝내지 않는 옵션 지정.
 
     // while(ros::ok()){
     //     geometry_msgs::Twist msg;

@@ -1,9 +1,10 @@
+// Imu 의 Roll, Pitch 값으로 turtlesim 을 제어할 것.
+// Roll 값으로 turtlesim 방향 제어(Rotate)
+// Pitch 값으로 turtlesim 이동 및 속도제어(Front)
+
 #include "ros/ros.h" // ROS 기본 헤더
 #include "sensor_msgs/Imu.h" // 퍼블리시할 메시지 헤더
 #include "geometry_msgs/Twist.h" //서브스크라이버할 메시지 헤더
-
-#include <algorithm>
-#include <ctime>
 
 float front=0;
 // float side=0;
@@ -63,6 +64,7 @@ int main(int argc, char **argv)
     
     ros::Rate loop_rate(10);
     
+    //ros::spinOnce(); 사용시 while(ros::ok()) 사용
     while(ros::ok())
     {
         geometry_msgs::Twist msg;

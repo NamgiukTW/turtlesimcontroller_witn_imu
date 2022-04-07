@@ -1,3 +1,5 @@
+// 헤더에 선언된 변수 가공을 해당 라이브러리에 작성
+
 #include "Listener2.h"
 
 void Listener::imuDataCallback(const sensor_msgs::Imu &imuMsg)
@@ -28,6 +30,7 @@ void Listener::imuDataCallback(const sensor_msgs::Imu &imuMsg)
     }
 
     // m_VeloCommandPublisher->publish(msg);
+    // 퍼블리셔를 전역변수로 선언하면 m_VeloCommandPublisher->publish(msg);을 사용하지 않아도 된다.
     m_ImuData.publish(msg);
 }
 
@@ -89,6 +92,7 @@ Listener::Listener(void) :
                         m_TurtlesimControl(),
                         m_TurtlesimPoseSub(),
                         m_Timer()
+                        // 생성자를 사용할 때 선언했던 모든 변수를 이렇게 작성한다.(일종의 사용법이다.)
 {
 
     /// 생성이 될 때, 해야하는 행동을 여기에 작성
@@ -99,10 +103,11 @@ Listener::Listener(void) :
     m_TurtlesimControl = m_Nh.subscribe("/imu/data", 100, &Listener::imuDataCallback, this);
     m_TurtlesimPoseSub = m_Nh.subscribe("/turtle1/pose", 100, &Listener::poseDataCallback, this);
     m_Timer = m_Nh.createTimer(ros::Duration(1.0), &Listener::timeCallBack, this);
+    // 만약 class를 같은 노드 안에서 사용하고 int main에 서브스크라이버나 타임을 선언한다면
+    // this가 아닌 class이름으로 선언한 변수를 &(변수)로 입력해야 한다.
+    // 예 : Listener listen1 으로 클래스를 변수로 선언했다 가정하면 &listen1 으로 입력 
 
     m_Spinner.start();
-
-
 }
 
 Listener::~Listener(void)
