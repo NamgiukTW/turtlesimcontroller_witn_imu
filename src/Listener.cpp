@@ -1,0 +1,111 @@
+#include "Listener2.h"
+
+void Listener::imuDataCallback(const sensor_msgs::Imu &imuMsg)
+{
+
+    float frontLocal1;
+    float rotateLocal1;
+
+    geometry_msgs::Twist msg;
+
+    frontLocal1 = atan(-imuMsg.linear_acceleration.x / sqrt(pow(imuMsg.linear_acceleration.y, 2) + pow(imuMsg.linear_acceleration.z, 2)));
+    frontLocal1 = frontLocal1 * 1.5;
+    rotateLocal1 = atan(-imuMsg.linear_acceleration.y / sqrt(pow(imuMsg.linear_acceleration.x, 2) + pow(imuMsg.linear_acceleration.z, 2)));
+
+    if (frontLocal1 > 1.5 || frontLocal1 < -1.5)
+        frontLocal1 = 0;
+
+    if (rotateLocal1 > 1.2 || rotateLocal1 < -1.2)
+        rotateLocal1 = 0;
+
+    msg.linear.x = frontLocal1;
+    msg.angular.z = rotateLocal1;
+
+    {
+        std::lock_guard<std::mutex> lock(m_Mut);
+        m_Front = frontLocal1;
+        m_Rotate = rotateLocal1;
+    }
+
+    // m_VeloCommandPublisher->publish(msg);
+    m_ImuData.publish(msg);
+}
+
+void Listener::poseDataCallback(const turtlesim::PoseConstPtr &turtlePoseMsg)
+{
+
+    float x1;
+    float y1;
+    float theta1;
+
+    x1 = turtlePoseMsg->x;
+    y1 = turtlePoseMsg->y;
+    theta1 = turtlePoseMsg->theta;
+
+    {
+        std::lock_guard<std::mutex> lock(m_Mut);
+        m_X = x1;
+        m_Y = y1;
+        m_Theta = theta1;
+    }
+}
+
+void Listener::timeCallBack(const ros::TimerEvent &)
+{
+
+    float x2;
+    float y2;
+    float theta2;
+    float frontLocal3;
+    float rotateLocal3;
+
+    {
+        std::lock_guard<std::mutex> lock(m_Mut);
+        x2 = m_X;
+        y2 = m_Y;
+        theta2 = m_Theta;
+        frontLocal3 = m_Front;
+        rotateLocal3 = m_Rotate;
+    }
+
+    std::cout << "X_posithon = " << x2 << std::endl;
+    std::cout << "Y_posithon = " << y2 << std::endl;
+    std::cout << "theta_Position = " << theta2 << std::endl;
+    std::cout << "linear_Velocity = " << frontLocal3 << std::endl;
+    std::cout << "angular_Velocity = " << rotateLocal3 << std::endl;
+}
+
+Listener::Listener(void) :
+                        m_Front(0),
+                        m_Rotate(0),
+                        m_X(0),
+                        m_Y(0),
+                        m_Theta(0),
+                        m_Mut(),
+                        m_ImuData(),
+                        m_Nh(),
+                        m_MyCallbackQueue(),
+                        m_Spinner(0, &m_MyCallbackQueue),
+                        m_TurtlesimControl(),
+                        m_TurtlesimPoseSub(),
+                        m_Timer()
+{
+
+    /// 생성이 될 때, 해야하는 행동을 여기에 작성
+
+    m_Nh.setCallbackQueue(&m_MyCallbackQueue);
+    m_ImuData = m_Nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel",100);
+
+    m_TurtlesimControl = m_Nh.subscribe("/imu/data", 100, &Listener::imuDataCallback, this);
+    m_TurtlesimPoseSub = m_Nh.subscribe("/turtle1/pose", 100, &Listener::poseDataCallback, this);
+    m_Timer = m_Nh.createTimer(ros::Duration(1.0), &Listener::timeCallBack, this);
+
+    m_Spinner.start();
+
+
+}
+
+Listener::~Listener(void)
+{
+    /// 소멸을 할 때, 해야하는 행동을 여기에 작성
+}

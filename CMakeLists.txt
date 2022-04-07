@@ -111,7 +111,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
    LIBRARIES turtlesimcontroller_witn_imu
-   CATKIN_DEPENDS roscpp std_msgs geometry_msgs sensor_msgs turtlesim
+   CATKIN_DEPENDS roscpp std_msgs geometry_msgs sensor_msgs turtlesim message_runtime
 #  DEPENDS system_lib
 )
 
@@ -122,14 +122,18 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/Controlling_turtlesim_with_IMU.cpp
-# )
+add_library(ngu_libarary
+  src/Listener.cpp
+)
+target_link_libraries(ngu_libarary
+  ${catkin_LIBRARIES}
+)
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -143,6 +147,8 @@ add_executable(turtlesimcontroller_witn_imu_1st src/turtlesimcontroller_witn_imu
 add_executable(turtlesimcontroller_witn_imu_2nd src/turtlesimcontroller_witn_imu_2nd.cpp)
 add_executable(turtlesimcontroller_witn_imu_3rd src/turtlesimcontroller_witn_imu_3rd.cpp)
 add_executable(turtlesimcontroller_witn_imu_4th src/turtlesimcontroller_witn_imu_4th.cpp)
+#add_executable(Listener src/Listener.cpp)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -156,6 +162,7 @@ add_dependencies(turtlesimcontroller_witn_imu_1st ${${PROJECT_NAME}_EXPORTED_TAR
 add_dependencies(turtlesimcontroller_witn_imu_2nd ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(turtlesimcontroller_witn_imu_3rd ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(turtlesimcontroller_witn_imu_4th ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(Listener ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(turtlesimcontroller_witn_imu_1st
@@ -168,8 +175,11 @@ target_link_libraries(turtlesimcontroller_witn_imu_3rd
   ${catkin_LIBRARIES}
 )
 target_link_libraries(turtlesimcontroller_witn_imu_4th
-  ${catkin_LIBRARIES}
+  ${catkin_LIBRARIES} ngu_libarary
 )
+#target_link_libraries(Listener
+#  ${catkin_LIBRARIES}
+#)
 
 #############
 ## Install ##

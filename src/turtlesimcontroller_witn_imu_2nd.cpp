@@ -10,25 +10,20 @@
 // #include <algorithm>
 // #include <ctime>
 
-
-//test
+// test
 #include <ros/callback_queue.h>
-float gFront=0;
-float gRotate=0;
+float gFront = 0;
+float gRotate = 0;
 // float side=0;
 
 // unsigned long now = 0;
 // unsigned long pass = 0;
 // double ms=0;
 
-float gX = 0;
-float gY = 0;
-float gTheta = 0;
-
 std::mutex gMut;
-ros::Publisher* pVeloCommandPublisher;
+ros::Publisher *pVeloCommandPublisher;
 
-void imuDataCallback(const sensor_msgs::Imu& imuMsg)
+void imuDataCallback(const sensor_msgs::Imu &imuMsg)
 {
     float frontLocal1;
     float rotateLocal1;
@@ -45,40 +40,35 @@ void imuDataCallback(const sensor_msgs::Imu& imuMsg)
 
     // std::lock_guard<std::mutex> lock(gMut);
 
-
     frontLocal1 = atan(-imuMsg.linear_acceleration.x / sqrt(pow(imuMsg.linear_acceleration.y, 2) + pow(imuMsg.linear_acceleration.z, 2)));
     frontLocal1 = frontLocal1 * 1.5;
     rotateLocal1 = atan(-imuMsg.linear_acceleration.y / sqrt(pow(imuMsg.linear_acceleration.x, 2) + pow(imuMsg.linear_acceleration.z, 2)));
-    
-    if(frontLocal1 > 1.5 || frontLocal1 < -1.5) // 잘못된 변수 사용
+
+    if (frontLocal1 > 1.5 || frontLocal1 < -1.5) // 잘못된 변수 사용
         frontLocal1 = 0;
 
-    if(rotateLocal1 > 1.2 || rotateLocal1 < -1.2)
+    if (rotateLocal1 > 1.2 || rotateLocal1 < -1.2)
         rotateLocal1 = 0;
-   
+
     // ROS_INFO("imu data subscribed...");
 
-    msg.linear.x=frontLocal1;
-    msg.angular.z=rotateLocal1;
-
+    msg.linear.x = frontLocal1;
+    msg.angular.z = rotateLocal1;
 
     // make message
     pVeloCommandPublisher->publish(msg);
 
-
-    gMut.lock();
-    gFront = frontLocal1;
-    gRotate = rotateLocal1;
-    gMut.unlock();
-
+    {
+        std::lock_guard<std::mutex> lock(gMut);
+        gFront = frontLocal1;
+        gRotate = rotateLocal1;
+    }
     // 70~73 라인 poseDataCallback 스레드와 변수 데이터를 공유해야 하므로 mutex 필요
 
     //  publish... (publisher가 본 함수 내에서 선언되면 동작 안해...)
-   
 }
 
-
-void poseDataCallback(const turtlesim::PoseConstPtr& turtlePoseMsg)
+void poseDataCallback(const turtlesim::PoseConstPtr &turtlePoseMsg)
 {
     // std::lock_guard<std::mutex> lock(gMut);
 
@@ -87,60 +77,59 @@ void poseDataCallback(const turtlesim::PoseConstPtr& turtlePoseMsg)
     // float thetaLocal;
 
     // gMut.lock();
-    // xLocal = gX;
-    // yLocal = gY;
-    // thetaLocal = gTheta;
+    // xLocal = x1;
+    // yLocal = y1;
+    // thetaLocal = theta1;
     // gMut.unlock();
 
     float frontLocal2;
     float rotateLocal2;
+    float x1 = 0;
+    float y1 = 0;
+    float theta1 = 0;
 
-
-    gMut.lock();
-    frontLocal2 = gFront;
-    rotateLocal2 = gRotate;
-    gMut.unlock();
-
+    {
+        std::lock_guard<std::mutex> lock(gMut);
+        frontLocal2 = gFront;
+        rotateLocal2 = gRotate;
+    }
     // 100~103 라인 imuDataCallback 스레드와 변수 데이터를 공유해야 하므로 mutex 필요
 
-    gX = turtlePoseMsg->x;
-    gY = turtlePoseMsg->y;
-    gTheta = turtlePoseMsg->theta;
-    frontLocal2 = turtlePoseMsg->linear_velocity;
-    rotateLocal2 = turtlePoseMsg->angular_velocity;
+    x1 = turtlePoseMsg->x;
+    y1 = turtlePoseMsg->y;
+    theta1 = turtlePoseMsg->theta;
 
-    // ROS_INFO("X_posithon = %f ", gX);
-    // ROS_INFO("Y_Posetion = %f ", gY);
-    // ROS_INFO("theta_Position = %f ", gTheta);
+    // ROS_INFO("X_posithon = %f ", x1);
+    // ROS_INFO("Y_Posetion = %f ", y1);
+    // ROS_INFO("theta_Position = %f ", theta1);
     // ROS_INFO("imu data subscribed?");
-    std::cout << "X_posithon = " << gX << std::endl;
-    std::cout << "Y_posithon = " << gY << std::endl;
-    std::cout << "theta_Position = " << gTheta << std::endl;
-    std::cout << "linear_Velocity = " << frontLocal2 << std::endl;
-    std::cout << "angular_Velocity = " << rotateLocal2 << std::endl;
+    std::cout << "X_Posithon = " << x1 << std::endl;
+    std::cout << "Y_Posithon = " << y1 << std::endl;
+    std::cout << "theta_Position = " << theta1 << std::endl;
+
+    std::cout << "Imu_Front = " << frontLocal2 << std::endl;
+    std::cout << "Imu_Rotate = " << rotateLocal2 << std::endl;
     sleep(1);
 
     // 139~142 라인 공유하는 스레드 없으므로 mutex 필요 없음
-
 }
-
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "turtlesimcontroller_witn_imu_2nd");
 
     ros::NodeHandle nh;
-    ros::Publisher imuData = nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel",100);
+    ros::Publisher imuData = nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 100);
     pVeloCommandPublisher = &imuData;
     // ros::Rate loopRate(10);
 
-    ros::CallbackQueue myCallbackQueue; //test
-    ros::AsyncSpinner spinner(0, &myCallbackQueue); //test
-    nh.setCallbackQueue(&myCallbackQueue); //test
+    ros::CallbackQueue myCallbackQueue;             // test
+    ros::AsyncSpinner spinner(0, &myCallbackQueue); // test
+    nh.setCallbackQueue(&myCallbackQueue);          // test
 
     ros::Subscriber turtlesimControl = nh.subscribe("/imu/data", 100, imuDataCallback);
     ros::Subscriber turtlesimPoseSub = nh.subscribe("/turtle1/pose", 100, poseDataCallback);
-   
+
     // ros::AsyncSpinner spinner(2);
     spinner.start();
     ros::waitForShutdown();
