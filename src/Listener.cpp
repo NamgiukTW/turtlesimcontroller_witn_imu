@@ -71,11 +71,14 @@ void Listener::timeCallBack(const ros::TimerEvent &)
         rotateLocal3 = m_Rotate;
     }
 
-    std::cout << "X_posithon = " << x2 << std::endl;
-    std::cout << "Y_posithon = " << y2 << std::endl;
-    std::cout << "theta_Position = " << theta2 << std::endl;
-    std::cout << "linear_Velocity = " << frontLocal3 << std::endl;
-    std::cout << "angular_Velocity = " << rotateLocal3 << std::endl;
+    cout << "===========================" << endl;
+    cout << "Hwo are you? " << this << endl;
+    cout << "X_posithon = " << x2 << endl;
+    cout << "Y_posithon = " << y2 << endl;
+    cout << "theta_Position = " << theta2 << endl;
+    cout << "linear_Velocity = " << frontLocal3 << endl;
+    cout << "angular_Velocity = " << rotateLocal3 << endl;
+    
 }
 
 Listener::Listener(void) :
@@ -94,10 +97,10 @@ Listener::Listener(void) :
                         m_Timer()
                         // 생성자를 사용할 때 선언했던 모든 변수를 이렇게 작성한다.(일종의 사용법이다.)
 {
-
-    /// 생성이 될 때, 해야하는 행동을 여기에 작성
+    // 생성이 될 때, 해야하는 행동을 여기에 작성
 
     m_Nh.setCallbackQueue(&m_MyCallbackQueue);
+
     m_ImuData = m_Nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel",100);
 
     m_TurtlesimControl = m_Nh.subscribe("/imu/data", 100, &Listener::imuDataCallback, this);
@@ -112,5 +115,6 @@ Listener::Listener(void) :
 
 Listener::~Listener(void)
 {
-    /// 소멸을 할 때, 해야하는 행동을 여기에 작성
+    // 소멸을 할 때, 해야하는 행동을 여기에 작성
 }
+//소멸자는 생성자와 역순 호출
