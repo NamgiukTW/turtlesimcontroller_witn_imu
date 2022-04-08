@@ -8,6 +8,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "turtlesimcontroller_witn_imu_4th");
 
     Listener listener1;
+    
+    // 맴버 변수의 간접 접근으로 인해 구동 가능
 
     // ros::NodeHandle nh;
     // ros::Publisher imuData = nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel",100);
